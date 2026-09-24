@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Panel – PDLMS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a237e;
+      --accent:  #3949ab;
+      --gold:    #f9a825;
+      --sidebar-w: 240px;
+    }
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f0f2ff; margin: 0; }
+
+    /* ─── Topbar ─── */
+    .topbar {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      padding: 14px 28px; color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,.2); position: sticky; top: 0; z-index: 100;
+    }
+    .topbar .brand { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .topbar .brand i { color: var(--gold); font-size: 1.4rem; }
+    .topbar .user-info { display: flex; align-items: center; gap: 14px; font-size: .88rem; }
+    .topbar .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--gold); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .95rem;
+    }
+    .topbar a { color: rgba(255,255,255,.85); text-decoration: none; font-size: .85rem; }
+    .topbar a:hover { color: #fff; }
+
+    /* ─── Nav tabs ─── */
+    .page-nav {
+      background: #fff; border-bottom: 1px solid #e8eaf6;
+      padding: 0 28px; display: flex; gap: 4px;
+    }
+    .nav-tab {
+      padding: 14px 20px; font-size: .88rem; font-weight: 600;
+      color: #757575; text-decoration: none; border-bottom: 3px solid transparent;
+      transition: all .2s; cursor: pointer;
+    }
+    .nav-tab:hover, .nav-tab.active {
+      color: var(--primary); border-bottom-color: var(--primary);
+    }
+
+    /* ─── Content ─── */
+    .page-body { padding: 28px; max-width: 1200px; margin: 0 auto; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ─── Cards ─── */
+    .card-box {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(26,35,126,.07);
+      padding: 24px; margin-bottom: 24px;
+    }
+    .card-box .card-title {
+      font-size: 1rem; font-weight: 700; color: var(--primary);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .card-title i { color: var(--accent); }
+
+    /* ─── Stat cards ─── */
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 20px;
+      box-shadow: 0 2px 10px rgba(26,35,126,.07);
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .stat-card .stat-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin-bottom: 10px;
+    }
+    .stat-card .stat-val { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+    .stat-card .stat-lbl { font-size: .78rem; color: #9e9e9e; font-weight: 500; }
+
+    /* ─── Forms ─── */
+    .form-label { font-size: .83rem; font-weight: 600; color: #424242; }
+    .form-control, .form-select {
+      border: 1.5px solid #e0e0e0; border-radius: 9px;
+      padding: 10px 13px; font-size: .88rem;
+      transition: border-color .2s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(57,73,171,.1);
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none; border-radius: 9px; padding: 11px 28px;
+      font-size: .9rem; font-weight: 600; color: #fff; cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,35,126,.3); }
+
+    /* ─── Table ─── */
+    .custom-table { width: 100%; border-collapse: collapse; }
+    .custom-table th {
+      background: #f5f6ff; color: var(--primary);
+      font-size: .8rem; font-weight: 700; padding: 11px 14px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .custom-table td { padding: 12px 14px; font-size: .87rem; color: #424242; border-bottom: 1px solid #f0f0f0; }
+    .custom-table tr:hover td { background: #fafbff; }
+
+    /* ─── Badges ─── */
+    .badge-available { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+    .badge-issued    { background: #fce4ec; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+    .badge-pending   { background: #fff8e1; color: #f57f17; padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+    .badge-approved  { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+    .badge-rejected  { background: #ffebee; color: #c62828; padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+    .badge-returned  { background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+    .badge-overdue   { background: #ff8a65; color: #fff;    padding: 4px 10px; border-radius: 20px; font-size: .77rem; font-weight: 600; }
+
+    /* ─── Notifications ─── */
+    .notif-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .notif-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; flex-shrink: 0;
+    }
+    .notif-issue   { background: #e8f5e9; color: #2e7d32; }
+    .notif-fine    { background: #ffebee; color: #c62828; }
+    .notif-return  { background: #e3f2fd; color: #1565c0; }
+    .notif-reminder{ background: #fff8e1; color: #f57f17; }
+    .notif-reject  { background: #ffebee; color: #b71c1c; }
+    .notif-text    { font-size: .87rem; color: #424242; }
+    .notif-time    { font-size: .75rem; color: #9e9e9e; margin-top: 2px; }
+
+    /* ─── Profile ─── */
+    .profile-header {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 14px; padding: 28px; color: #fff; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .profile-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--gold); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 700;
+    }
+    .profile-name { font-size: 1.3rem; font-weight: 700; }
+    .profile-meta { font-size: .85rem; opacity: .85; }
+
+    .alert { border-radius: 10px; font-size: .88rem; }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="brand">
+    <i class="fas fa-book-open"></i>
+    <span>Policy Driven Library Management System</span>
+  </div>
+  <div class="user-info">
+    {% if user_info %}
+      <div class="avatar">{{ user_info.name[0].upper() }}</div>
+      <span>{{ user_info.name }}</span>
+    {% endif %}
+    <a href="/logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+  </div>
+</div>
+
+<!-- Page Nav -->
+<div class="page-nav">
+  <a class="nav-tab active" onclick="showSection('books', this)">
+    <i class="fas fa-book me-1"></i>Books
+  </a>
+  <a class="nav-tab" onclick="showSection('requests', this)">
+    <i class="fas fa-clipboard-list me-1"></i>My Requests
+  </a>
+  <a class="nav-tab" onclick="showSection('history', this)">
+    <i class="fas fa-history me-1"></i>Borrow History
+  </a>
+  <a class="nav-tab" onclick="showSection('notifications', this)">
+    <i class="fas fa-bell me-1"></i>Notifications
+    {% if notifications %}
+      <span class="ms-1 badge rounded-pill" style="background:#e53935;font-size:.7rem;">{{ notifications|length }}</span>
+    {% endif %}
+  </a>
+  <a class="nav-tab" onclick="showSection('profile', this)">
+    <i class="fas fa-user me-1"></i>Profile
+  </a>
+</div>
+
+<!-- Flash Messages -->
+<div class="page-body" id="flash-area">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+</div>
+
+<div class="page-body" style="padding-top:0;">
+
+  <!-- ══ STAT ROW ══ -->
+  {% set avail_count = books | selectattr('availability_status', 'equalto', 'Available') | list | length %}
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e8eaf6;"><i class="fas fa-book" style="color:#3949ab;"></i></div>
+      <div class="stat-val">{{ books|length }}</div>
+      <div class="stat-lbl">Total Books</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e8f5e9;"><i class="fas fa-check-circle" style="color:#2e7d32;"></i></div>
+      <div class="stat-val">{{ avail_count }}</div>
+      <div class="stat-lbl">Available</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fff8e1;"><i class="fas fa-clock" style="color:#f9a825;"></i></div>
+      <div class="stat-val">{{ my_requests|selectattr('status','equalto','Pending')|list|length }}</div>
+      <div class="stat-lbl">Pending Requests</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e3f2fd;"><i class="fas fa-bookmark" style="color:#1565c0;"></i></div>
+      <div class="stat-val">{{ transactions|selectattr('status','equalto','Issued')|list|length }}</div>
+      <div class="stat-lbl">Books Issued</div>
+    </div>
+  </div>
+
+  <!-- ══ BOOKS SECTION ══ -->
+  <div class="section active" id="sec-books">
+    <div class="card-box">
+      <div class="card-title"><i class="fas fa-search"></i> Request a Book</div>
+      <form method="POST" action="/request_book">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label">Select Book</label>
+            <select class="form-select" name="book_id" required>
+              {% for b in books %}
+                <option value="{{ b.book_id }}" {% if b.availability_status != 'Available' %}disabled{% endif %}>
+                  {{ b.title }} – {{ b.author }}
+                  {% if b.availability_status != 'Available' %} (Not Available){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button type="submit" class="btn-submit w-100">
+              <i class="fas fa-paper-plane me-1"></i> Submit Request
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card-box">
+      <div class="card-title"><i class="fas fa-list"></i> All Books</div>
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Title</th><th>Author</th><th>Category</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in books %}
+            <tr>
+              <td>{{ b.book_id }}</td>
+              <td><strong>{{ b.title }}</strong></td>
+              <td>{{ b.author }}</td>
+              <td>{{ b.book_category }}</td>
+              <td>
+                {% if b.availability_status == 'Available' %}
+                  <span class="badge-available"><i class="fas fa-check-circle me-1"></i>Available</span>
+                {% else %}
+                  <span class="badge-issued"><i class="fas fa-times-circle me-1"></i>Issued</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MY REQUESTS SECTION ══ -->
+  <div class="section" id="sec-requests">
+    <div class="card-box">
+      <div class="card-title"><i class="fas fa-clipboard-list"></i> My Book Requests</div>
+      {% if my_requests %}
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr><th>#</th><th>Book Title</th><th>Request Date</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for r in my_requests %}
+            <tr>
+              <td>{{ r.request_id }}</td>
+              <td><strong>{{ r.title }}</strong></td>
+              <td>{{ r.request_date }}</td>
+              <td>
+                {% if r.status == 'Pending' %}
+                  <span class="badge-pending">Pending</span>
+                {% elif r.status == 'Approved' %}
+                  <span class="badge-approved">Approved</span>
+                {% else %}
+                  <span class="badge-rejected">Rejected</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-muted">No requests yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ BORROW HISTORY SECTION ══ -->
+  <div class="section" id="sec-history">
+    <div class="card-box">
+      <div class="card-title"><i class="fas fa-history"></i> Borrow History</div>
+      {% if transactions %}
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr><th>#</th><th>Book</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for t in transactions %}
+            <tr>
+              <td>{{ t.transaction_id }}</td>
+              <td><strong>{{ t.title }}</strong><br><small class="text-muted">{{ t.author }}</small></td>
+              <td>{{ t.issue_date }}</td>
+              <td>{{ t.due_date }}</td>
+              <td>{{ t.return_date or '—' }}</td>
+              <td>
+                {% if t.status == 'Issued' and t.overdue_days > 0 %}
+                  <span class="badge-overdue"><i class="fas fa-exclamation-triangle me-1"></i>Overdue ({{ t.overdue_days }}d)</span>
+                {% elif t.status == 'Issued' %}
+                  <span class="badge-issued">Issued</span>
+                {% else %}
+                  <span class="badge-returned">Returned</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-muted">No borrow history yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ NOTIFICATIONS SECTION ══ -->
+  <div class="section" id="sec-notifications">
+    <div class="card-box">
+      <div class="card-title"><i class="fas fa-bell"></i> Notifications</div>
+      {% if notifications %}
+        {% for n in notifications %}
+        <div class="notif-item">
+          <div class="notif-icon notif-{{ n.type|lower }}">
+            {% if n.type == 'Issue' %}<i class="fas fa-book"></i>
+            {% elif n.type == 'Fine' %}<i class="fas fa-rupee-sign"></i>
+            {% elif n.type == 'Return' %}<i class="fas fa-undo"></i>
+            {% elif n.type == 'Reminder' %}<i class="fas fa-clock"></i>
+            {% else %}<i class="fas fa-info"></i>{% endif %}
+          </div>
+          <div>
+            <div class="notif-text">{{ n.message }}</div>
+            <div class="notif-time">{{ n.sent_date }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No notifications yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ PROFILE SECTION ══ -->
+  <div class="section" id="sec-profile">
+    {% if user_info %}
+    <div class="profile-header">
+      <div class="profile-avatar">{{ user_info.name[0].upper() }}</div>
+      <div>
+        <div class="profile-name">{{ user_info.name }}</div>
+        <div class="profile-meta">{{ user_info.category_name }} &nbsp;|&nbsp; {{ user_info.email or 'No email' }}</div>
+        <div class="profile-meta">📞 {{ user_info.phone or 'No phone' }}</div>
+      </div>
+    </div>
+    <div class="card-box">
+      <div class="card-title"><i class="fas fa-id-card"></i> Account Details</div>
+      <table class="custom-table">
+        <tr><td style="font-weight:600;width:160px;">User ID</td><td>#{{ user_info.user_id }}</td></tr>
+        <tr><td style="font-weight:600;">Name</td><td>{{ user_info.name }}</td></tr>
+        <tr><td style="font-weight:600;">Email</td><td>{{ user_info.email }}</td></tr>
+        <tr><td style="font-weight:600;">Phone</td><td>{{ user_info.phone }}</td></tr>
+        <tr><td style="font-weight:600;">Category</td><td>{{ user_info.category_name }}</td></tr>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+</div><!-- /page-body -->
+
+<script>
+function showSection(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+
+</body>
+</html>

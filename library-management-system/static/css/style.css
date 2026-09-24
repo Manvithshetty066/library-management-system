@@ -1,0 +1,28 @@
+/* Policy Driven Library Management System – Global Overrides */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default form-control outline in Bootstrap, use custom */
+.form-control:focus,
+.form-select:focus {
+  outline: none;
+}
+
+/* Table fixes */
+.table-responsive {
+  border-radius: 10px;
+  overflow: hidden;
+}

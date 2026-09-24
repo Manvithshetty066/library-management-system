@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – PDLMS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root { --primary:#1a237e; --accent:#3949ab; --gold:#f9a825; }
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f0f2ff; margin: 0; }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      padding: 14px 28px; color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,.2); position: sticky; top: 0; z-index: 100;
+    }
+    .topbar .brand { font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .topbar .brand i { color: var(--gold); font-size: 1.3rem; }
+    .topbar a { color: rgba(255,255,255,.85); text-decoration: none; font-size: .85rem; padding: 7px 14px; border-radius: 8px; }
+    .topbar a:hover { background: rgba(255,255,255,.15); }
+
+    .page-body { padding: 28px; max-width: 1200px; margin: 0 auto; }
+    .page-title { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 24px; }
+
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 18px; margin-bottom: 28px; }
+    .stat-card {
+      background: #fff; border-radius: 14px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(26,35,126,.08);
+      display: flex; gap: 18px; align-items: center;
+    }
+    .stat-icon {
+      width: 52px; height: 52px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .stat-val { font-size: 1.9rem; font-weight: 700; color: var(--primary); }
+    .stat-lbl { font-size: .8rem; color: #9e9e9e; font-weight: 500; }
+
+    .card-box { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(26,35,126,.07); padding: 24px; }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+    .custom-table { width: 100%; border-collapse: collapse; }
+    .custom-table th { background: #f5f6ff; color: var(--primary); font-size: .78rem; font-weight: 700; padding: 11px 14px; text-transform: uppercase; letter-spacing: .4px; }
+    .custom-table td { padding: 12px 14px; font-size: .87rem; color: #424242; border-bottom: 1px solid #f0f0f0; }
+    .custom-table tr:hover td { background: #fafbff; }
+
+    .badge-issued   { background:#fce4ec; color:#c62828; padding:4px 10px; border-radius:20px; font-size:.77rem; font-weight:600; }
+    .badge-returned { background:#e3f2fd; color:#1565c0; padding:4px 10px; border-radius:20px; font-size:.77rem; font-weight:600; }
+    .badge-overdue  { background:#ff5722; color:#fff;    padding:4px 10px; border-radius:20px; font-size:.77rem; font-weight:600; }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="brand">
+    <i class="fas fa-chart-bar"></i>
+    <span>Policy Driven Library Management System – Dashboard</span>
+  </div>
+  <div style="display:flex;gap:4px;">
+    <a href="/admin"><i class="fas fa-cog me-1"></i>Admin Panel</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+  </div>
+</div>
+
+<div class="page-body">
+  <div class="page-title"><i class="fas fa-tachometer-alt me-2"></i>Library Dashboard</div>
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fce4ec;"><i class="fas fa-book-reader" style="color:#c62828;"></i></div>
+      <div>
+        <div class="stat-val">{{ issued }}</div>
+        <div class="stat-lbl">Currently Issued</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#e3f2fd;"><i class="fas fa-undo" style="color:#1565c0;"></i></div>
+      <div>
+        <div class="stat-val">{{ returned }}</div>
+        <div class="stat-lbl">Books Returned</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#ffebee;"><i class="fas fa-rupee-sign" style="color:#c62828;"></i></div>
+      <div>
+        <div class="stat-val">{{ unpaid_fines }}</div>
+        <div class="stat-lbl">Unpaid Fines</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#fff8e1;"><i class="fas fa-coins" style="color:#f9a825;"></i></div>
+      <div>
+        <div class="stat-val">₹{{ "%.0f"|format(fine_total) }}</div>
+        <div class="stat-lbl">Total Fine Amount</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Table -->
+  <div class="card-box">
+    <div class="card-title"><i class="fas fa-list-alt"></i> All Transactions</div>
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Txn #</th>
+            <th>User</th>
+            <th>Book</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th>Return Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td><strong>#{{ t.transaction_id }}</strong></td>
+            <td>{{ t.user_name }}</td>
+            <td>{{ t.book_title }}</td>
+            <td>{{ t.issue_date }}</td>
+            <td>{{ t.due_date }}</td>
+            <td>{{ t.return_date or '—' }}</td>
+            <td>
+              {% if t.status == 'Issued' and t.overdue_days > 0 %}
+                <span class="badge-overdue"><i class="fas fa-exclamation-triangle me-1"></i>Overdue {{ t.overdue_days }}d</span>
+              {% elif t.status == 'Issued' %}
+                <span class="badge-issued">Issued</span>
+              {% else %}
+                <span class="badge-returned">Returned</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
